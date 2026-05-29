@@ -1,7 +1,8 @@
 using UnityEngine;
-using Cysharp.Threading.Tasks.Triggers;
-using static UniTaskTokenContainer;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
 
+namespace CubicEngine.UnitaskExtension
+{
 /**
  *  @author : hns17@naver.com
  *  @brief  : Monobehaviour 용 CancellationToken 관리용 클래스
@@ -41,9 +42,17 @@ public class UniTaskBehaviour<T> : MonoBehaviour where T : MonoBehaviour
     public CancellationTokenData CreateToken()
     {
         if(trigger == null) {
+#if UNITY_2019_2_OR_NEWER
             this.TryGetComponent<AsyncDisableAndDestroyTrigger>(out trigger);
+#else
+            trigger = GetComponent<AsyncDisableAndDestroyTrigger>();
+#endif
+            if(trigger == null) {
+                trigger = gameObject.AddComponent<AsyncDisableAndDestroyTrigger>();
+            }
         }
 
         return trigger.CancellationToken;
     }
+}
 }

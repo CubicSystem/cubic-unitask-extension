@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Cysharp.Threading.Tasks.Triggers;
-using static UniTaskTokenContainer;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
 
-namespace Cysharp.Threading.Tasks
+namespace CubicEngine.UnitaskExtension
 {
     /**
      * @author  hns17@naver.com
@@ -24,12 +23,9 @@ namespace Cysharp.Threading.Tasks
             return component.GetAsyncDisableAndDestroyTrigger().CancellationToken;
         }
     }
-}
-
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-namespace Cysharp.Threading.Tasks.Triggers
-{
+
     /**
      * @author  hns17@naver.com
      * @brief   CancellationToken 관리용 컴포넌트(AsyncDisableAndDestroyTrigger)를 반환한다.
@@ -85,7 +81,7 @@ namespace Cysharp.Threading.Tasks.Triggers
                     throw new System.Exception(errMsg);
                 }
 
-                var newCancellationTokenData = UniTaskTokenContainer.GetObjectToken();
+                var newCancellationTokenData = UniTaskTokenContainer.GetObjectToken(gameObject);
                 tokenDatas.Add(newCancellationTokenData.TokenID, newCancellationTokenData);
                 return newCancellationTokenData;
             }
@@ -95,7 +91,7 @@ namespace Cysharp.Threading.Tasks.Triggers
         {
             var res = false;
             if(tokenDatas.TryGetValue(tokenID, out var tokenData)) {
-                res = UniTaskTokenContainer.Cancel(tokenID);
+                res = UniTaskTokenContainer.Cancel(tokenData);
                 tokenDatas.Remove(tokenID);
             }
             return res;

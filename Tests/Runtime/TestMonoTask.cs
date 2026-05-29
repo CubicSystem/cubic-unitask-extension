@@ -1,8 +1,11 @@
+using CubicEngine.UnitaskExtension;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
-using static UniTaskTokenContainer;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
 
+namespace CubicEngine.UnitaskExtension.Tests
+{
 public class TestMonoTask : UniTaskBehaviour<TestMonoTask>
 {
     private CancellationTokenData tokenData;
@@ -18,7 +21,7 @@ public class TestMonoTask : UniTaskBehaviour<TestMonoTask>
 
     async UniTaskVoid TestTask()
     {
-        tokenData = new CancellationTokenData();
+        tokenData = CreateToken();
         while(true) {
             await UniTask.Delay(1000, false, PlayerLoopTiming.Update, tokenData.Token);
             Debug.Log("Test" + SceneManager.GetActiveScene().buildIndex);
@@ -34,4 +37,5 @@ public class TestMonoTask : UniTaskBehaviour<TestMonoTask>
             TestTask().Forget();
         }
     }
+}
 }

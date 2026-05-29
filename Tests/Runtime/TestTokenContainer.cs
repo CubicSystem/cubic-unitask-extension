@@ -1,7 +1,10 @@
+using CubicEngine.UnitaskExtension;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using static UniTaskTokenContainer;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
 
+namespace CubicEngine.UnitaskExtension.Tests
+{
 public class TestTokenContainer : MonoBehaviour
 {
     private CancellationTokenData global;
@@ -14,9 +17,9 @@ public class TestTokenContainer : MonoBehaviour
     void Start()
     {
         global = UniTaskTokenContainer.GetGlobalToken("GlobalToken");
-        scene = UniTaskTokenContainer.GetSceneToken();
-        group = UniTaskTokenContainer.GetGroupToken("GroupToken");
-        obj = UniTaskTokenContainer.GetObjectToken();
+        scene = UniTaskTokenContainer.GetSceneToken(this);
+        group = UniTaskTokenContainer.GetGroupToken("GroupToken", this);
+        obj = UniTaskTokenContainer.GetObjectToken(this);
 
         TestTask("global", global).Forget();
         TestTask("scene", scene).Forget();
@@ -24,7 +27,7 @@ public class TestTokenContainer : MonoBehaviour
         TestTask("group_task1", group).Forget();
         TestTask("obj0", obj).Forget();
         
-        TestTask("token_object", tokenObject.GetTokenData()).Forget();
+        TestTask("token_object", tokenObject.GetTokenData(this)).Forget();
     }
 
 
@@ -52,7 +55,8 @@ public class TestTokenContainer : MonoBehaviour
         }
         else if(Input.GetKeyUp(KeyCode.Alpha5))
         {
-            tokenObject.Cancel();
+            tokenObject.Cancel(this);
         }
     }
+}
 }

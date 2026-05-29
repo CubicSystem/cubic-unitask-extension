@@ -1,159 +1,317 @@
-> # UniTaskExtention
+# Cubic UniTask Extension
 
-- Unitask 편의 기능 확장
-  - Cancellation을 위한 토큰 생성 및 관리 기능 추가
-- Version 1.1.0
+Unity에서 `CancellationToken`을 씬, 오브젝트, 그룹 단위로 발행하고 관리하기 위한 UniTask 보조 패키지입니다.
 
+이 패키지는 토큰 자체는 .NET `CancellationToken`으로 제공하지만, 주 사용 목적은 UniTask의 `UniTask.Delay`, async loop, fire-and-forget task 등에 전달할 취소 토큰을 안정적으로 관리하는 것입니다.
 
+## Requirements
 
-> # 설치
+- Unity 2019.1 이상
+- UniTask 선설치 필요
 
-1. 우선 Unitask의 설치가 필요하다.
+Unity Package Manager는 Git URL 패키지의 `package.json`에서 다른 Git 패키지를 자동 설치하지 않습니다. 따라서 이 패키지를 설치하기 전에 프로젝트 `Packages/manifest.json`에 UniTask를 먼저 추가해야 합니다.
 
-   - upm git : https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask
-     - package manager를 통해 위 git 주소를 추가
-
-   - 자세한 내용은 [Unitask GitPage](https://github.com/Cysharp/UniTask)를 확인
-
-2. UniTaskExtention 추가
-   - upm git : https://github.com/hns17/UnityUtility.git?path=Assets/Utility/UniTaskExtention
-     - 위와 동일한 방법으로 추가
-
-
-
-> # 항목
-
-## UnitaskTokenContainer
-
-- Container를 통해 Token을 생성하고 파괴(Cancel)한다.
-
-
-
-### Token의 종류
-
-1. GlobalToken
-   - Project 전체에서 사용되는 Token으로 직접 Container를 통해 직접 파괴(Cancel)하지 않으면 파괴되지 않는다.
-   - string key 값을 통해 발행한다.
-2. SceneToken
-   - Scene 내부에서 사용하는 공유 토큰으로 하나만 존재한다.
-   - Scene이 Unload되면 파괴된다.
-3. GroupToken
-   - Task의 Token을 Group단위로 관리할 때 사용하는 Token
-   - string key 값으로 발행한다.
-   -  Scene이 Unload되면 파괴된다.
-4. ObjectToken
-   - Object단위로 사용되는 Token.
-   - Scene이 Unload되면 파괴된다.
-
-
-
-### Struct & Function
-
-1. CancellationTokenData
-   - UniTaskTokenContainer를 통해 발행한 Token Data
-     - TokenID(int)
-       - 발행된 CancellationToken의 고유 id
-     - Token(CancellationToken)
-       - 발행된 CancellationToke
-2. Get Cancellation Token
-   - 목적에 맞는 토큰 발행하기
-   - CancellationTokenData를 가져오며, 없는 경우 생성 후 가져온다.
-   - return : TokenData
-
-```
-//Get GlobalToken
-CancellationTokenData global = UniTaskTokenContainer.GetGlobalToken("GlobalToken");
-
-//Get SceneToken
-CancellationTokenData scene = UniTaskTokenContainer.GetSceneToken();
-
-//Get GroupToken
-CancellationTokenData group = UniTaskTokenContainer.GetGroupToken("GroupToken");
-
-//Get ObjectToken
-CancellationTokenData obj = UniTaskTokenContainer.GetObjectToken();
-```
-
-3. Cancel
-   - 발행된 Token 파괴하기
-   - return : bool
-     - Cancel이 실패한 경우 false, 성공한 경우 true
-
-```
-bool isCancel = false;
-CancellationTokenData global = UniTaskTokenContainer.GetGlobalToken("GlobalToken");
-
-//TokenID를 통해 파괴
-isCancel = UniTaskTokenContainer.Cancel(group.TokenID);
-
-//string Key값을 통해 파괴
-isCancel = UniTaskTokenContainer.Cancel("GlobalToken");
-
-//TokenData를 통해 파괴
-isCancel = UniTaskTokenContainer.Cancel(global);
-```
-
-
-
-## GetCancellationTokenOnDisableAndDestroy Method
-
-- Monobehaviour용 확장함수
-- Unitask의 GetCancellationOnDestroy 함수의 확장형
-- 오브젝트가 비활성화 되거나 파괴될 경우 Cancel되는 Token을 발행한다.
-
-```C#
-public class XXXXXX : MonoBehaviour{
-    async UniTaskVoid TestTask() {
-        CancellationTokenData token = this.GetCancellationTokenOnDisableAndDestroy();
-        
-        while(true) {
-            await UniTask.Delay(1000, false, PlayerLoopTiming.Update, token.Token);
-			...
-        }
-    }    
+```json
+{
+  "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.cubicengine.unitask_extention": "https://github.com/CubicSystem/cubic-unitask-extension.git#develop"
+  }
 }
 ```
 
+현재 asmdef 상태:
 
+- `Runtime/UniTaskExtention.asmdef`는 UniTask asmdef GUID로 보이는 `GUID:f51ebe6a0ceec4240a699833d6309b23`을 참조합니다.
+- `Tests/UniTaskExtention.Test.asmdef`도 Runtime asmdef와 같은 UniTask GUID를 참조합니다.
+- `Editor/UniTaskExtention.Editor.asmdef`는 Runtime asmdef만 참조하며 Editor 전용입니다.
 
-## UniTaskBehaviour
+즉, 지금 구성에서는 UniTask가 설치되어 있어야 asmdef 참조가 정상 해석됩니다.
 
-- GetCancellationTokenOnDisableAndDestroy 함수는 내부적으로 GetComponent 및 AddComponent 함수를 호출한다.
-- 반복적으로 사용 할 경우 Overhead 문제가 있으므로 이를 해결하기 위해 UniTaskBehaviour를 상속받아서 사용한다.
-- UniTaskBehaviour는 AddComponent 연산을 수행하지 않으며, 처음 Token 발행시 한번만 GetComponent 연산을 수행한다.
-- MemberFunction
-  - CreateToken : CancellationTokenData 가져오기
-  - Cancel(int) : Token Cancel
-  - Cancel(TokenData) : Token Cancel
+## Namespaces
 
-```c#
-public class TestMonoTask : UniTaskBehaviour<TestMonoTask>{
+```csharp
+using CubicEngine.UnitaskExtension;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
+```
+
+| Area | Namespace |
+| --- | --- |
+| Runtime | `CubicEngine.UnitaskExtension` |
+| Editor | `CubicEngine.UnitaskExtension.Editor` |
+| Tests | `CubicEngine.UnitaskExtension.Tests` |
+
+## Overview
+
+```mermaid
+flowchart TD
+    UserCode["User MonoBehaviour / UniTask code"]
+    Behaviour["UniTaskBehaviour<T>"]
+    Extension["GetCancellationTokenOnDisableAndDestroy()"]
+    Trigger["AsyncDisableAndDestroyTrigger"]
+    Container["UniTaskTokenContainer"]
+    Global["Global tokens"]
+    SceneMap["Scene token containers"]
+    SceneToken["Scene token"]
+    GroupToken["Group tokens"]
+    ObjectToken["Object tokens"]
+
+    UserCode --> Behaviour
+    UserCode --> Extension
+    Behaviour --> Trigger
+    Extension --> Trigger
+    Trigger --> Container
+    Container --> Global
+    Container --> SceneMap
+    SceneMap --> SceneToken
+    SceneMap --> GroupToken
+    SceneMap --> ObjectToken
+```
+
+토큰은 `UniTaskTokenContainer.CancellationTokenData`로 반환됩니다.
+
+```csharp
+public struct CancellationTokenData
+{
+    public CancellationToken Token { get; }
+    public int TokenID { get; }
+    public int SceneHandle { get; }
+    public TokenType Type { get; }
+    public bool IsValid { get; }
+}
+```
+
+## Token Types
+
+| Type | Scope | Lifetime |
+| --- | --- | --- |
+| `Global` | 프로젝트 전역 key | 직접 `Cancel`할 때까지 유지 |
+| `Scene` | 특정 Unity Scene | 해당 씬 unload 시 cancel |
+| `Group` | 특정 Scene 안의 string key | 직접 cancel 또는 해당 씬 unload 시 cancel |
+| `Object` | 특정 Scene 안의 개별 발행 토큰 | owner disable/destroy, 직접 cancel, 또는 해당 씬 unload 시 cancel |
+
+멀티씬 환경에서는 active scene에 의존하지 않도록 `GameObject`, `Component`, 또는 `Scene`을 명시해서 토큰을 발행하는 것을 권장합니다.
+
+## Scene Ownership
+
+```mermaid
+sequenceDiagram
+    participant Obj as Scene B Object
+    participant Trigger as AsyncDisableAndDestroyTrigger
+    participant Container as UniTaskTokenContainer
+    participant SceneB as Scene B Token Container
+    participant Task as UniTask Loop
+
+    Obj->>Trigger: GetCancellationTokenOnDisableAndDestroy()
+    Trigger->>Container: GetObjectToken(gameObject)
+    Container->>Container: Resolve gameObject.scene
+    Container->>SceneB: Register object token
+    SceneB-->>Trigger: CancellationTokenData
+    Trigger-->>Obj: CancellationTokenData
+    Obj->>Task: await UniTask.Delay(..., token.Token)
+
+    Note over SceneB: Scene B unload
+    SceneB->>SceneB: Clear scene/group/object tokens
+    SceneB-->>Task: Cancellation requested
+```
+
+## Basic Usage
+
+### Direct Token Container
+
+```csharp
+using CubicEngine.UnitaskExtension;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+
+public sealed class TokenExample : MonoBehaviour
+{
+    private CancellationTokenData groupToken;
+
+    private void Start()
+    {
+        var globalToken = UniTaskTokenContainer.GetGlobalToken("GlobalToken");
+        var sceneToken = UniTaskTokenContainer.GetSceneToken(this);
+        groupToken = UniTaskTokenContainer.GetGroupToken("Loading", this);
+        var objectToken = UniTaskTokenContainer.GetObjectToken(this);
+
+        RunAsync("scene", sceneToken).Forget();
+        RunAsync("group", groupToken).Forget();
+        RunAsync("object", objectToken).Forget();
+    }
+
+    private async UniTaskVoid RunAsync(string label, CancellationTokenData tokenData)
+    {
+        while(!tokenData.Token.IsCancellationRequested) {
+            await UniTask.Delay(1000, cancellationToken: tokenData.Token);
+            Debug.Log(label);
+        }
+    }
+
+    private void OnDisable()
+    {
+        UniTaskTokenContainer.Cancel(groupToken);
+    }
+}
+```
+
+### Disable And Destroy Token
+
+`GetCancellationTokenOnDisableAndDestroy()`는 대상 오브젝트의 씬에 object token을 등록합니다. 오브젝트가 비활성화되거나 파괴되면 해당 토큰이 cancel됩니다.
+
+```csharp
+using CubicEngine.UnitaskExtension;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+
+public sealed class DisableDestroyExample : MonoBehaviour
+{
+    private void OnEnable()
+    {
+        RunAsync().Forget();
+    }
+
+    private async UniTaskVoid RunAsync()
+    {
+        CancellationTokenData tokenData = this.GetCancellationTokenOnDisableAndDestroy();
+
+        while(!tokenData.Token.IsCancellationRequested) {
+            await UniTask.Delay(1000, cancellationToken: tokenData.Token);
+            Debug.Log("running");
+        }
+    }
+}
+```
+
+### UniTaskBehaviour
+
+`UniTaskBehaviour<T>`는 내부 `AsyncDisableAndDestroyTrigger` 참조를 재사용하는 베이스 클래스입니다.
+
+```csharp
+using CubicEngine.UnitaskExtension;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+
+public sealed class BehaviourExample : UniTaskBehaviour<BehaviourExample>
+{
     private CancellationTokenData tokenData;
-    
-	async UniTaskVoid TestTask()
+
+    private void OnEnable()
     {
         tokenData = CreateToken();
-        
-        while(true) {
-            //Get Token, this.Token
-            await UniTask.Delay(1000, false, PlayerLoopTiming.Update, tokenData.Token);
-			...
+        RunAsync().Forget();
+    }
+
+    private async UniTaskVoid RunAsync()
+    {
+        while(!tokenData.Token.IsCancellationRequested) {
+            await UniTask.Delay(1000, cancellationToken: tokenData.Token);
+            Debug.Log("tick");
         }
     }
-    
-    private void Update(){
-        if(Input.GetKeyUp(KeyCode.Space)) {
-            //Cancellation Token
-            this.Cancel(tokenData);
-        }
+
+    private void OnDisable()
+    {
+        Cancel(tokenData);
     }
 }
 ```
 
+## UniTaskTokenObject
 
+`UniTaskTokenObject`는 string key를 ScriptableObject asset으로 관리하기 위한 타입입니다. 코드에 직접 key 문자열을 흩뿌리지 않고 GlobalToken 또는 GroupToken을 공유할 수 있습니다.
 
-# UniTaskTokenObject
+멀티씬에서 GroupToken으로 사용할 때는 호출자 오브젝트나 씬을 넘겨야 올바른 씬 컨테이너에 등록됩니다.
 
-- Unity의 ScriptableObject와 SerializeField 기능을 사용하여 종속성 없이 GlobalToken과 GroupToken의 key 정보를 공유하기 위해 사용
-- 코드 상으로 key를 관리할 필요가 없다.
-- 하지만 asset 파일을 만들기 때문에 파일 관리가 필요하다.
+```csharp
+using CubicEngine.UnitaskExtension;
+using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+
+public sealed class TokenObjectExample : MonoBehaviour
+{
+    [SerializeField] private UniTaskTokenObject tokenObject;
+
+    private void Start()
+    {
+        CancellationTokenData tokenData = tokenObject.GetTokenData(this);
+        RunAsync(tokenData).Forget();
+    }
+
+    private async UniTaskVoid RunAsync(CancellationTokenData tokenData)
+    {
+        await UniTask.Delay(1000, cancellationToken: tokenData.Token);
+    }
+
+    private void CancelGroup()
+    {
+        tokenObject.Cancel(this);
+    }
+}
+```
+
+Editor 어셈블리는 `UniTaskTokenObject`의 빈 `tokenKey`에 asset GUID를 자동으로 채웁니다.
+
+## Multi-Scene Notes
+
+```mermaid
+flowchart LR
+    SceneA["Scene A"]
+    SceneB["Scene B"]
+    ObjB["Object in Scene B"]
+    Active["Active Scene"]
+    Correct["GetObjectToken(objB)\nuses objB.scene"]
+    Legacy["GetObjectToken()\nuses active scene fallback"]
+
+    Active --> SceneA
+    ObjB --> SceneB
+    ObjB --> Correct --> SceneB
+    ObjB -. avoid in multi-scene .-> Legacy --> SceneA
+```
+
+권장 사항:
+
+- 오브젝트와 연결된 task는 `GetCancellationTokenOnDisableAndDestroy()`, `GetObjectToken(this)`, `GetGroupToken(key, this)`를 사용합니다.
+- 명시적인 씬 스코프가 필요하면 `GetSceneToken(scene)`, `GetGroupToken(key, scene)`, `GetObjectToken(scene)`을 사용합니다.
+- `GetSceneToken()`, `GetGroupToken(key)`, `GetObjectToken()` 같은 무인자 호출은 active scene fallback이므로 단일 씬 또는 명확히 active scene을 의도할 때만 사용합니다.
+- 씬 unload 시 해당 scene handle에 등록된 Scene, Group, Object token은 모두 cancel됩니다.
+
+## Public API Summary
+
+| API | Purpose |
+| --- | --- |
+| `GetGlobalToken(string key)` | 전역 token 발행 또는 조회 |
+| `GetSceneToken(...)` | scene scope token 발행 또는 조회 |
+| `GetGroupToken(string key, ...)` | scene 안의 key 기반 group token 발행 또는 조회 |
+| `GetObjectToken(...)` | scene 안의 object token 발행 |
+| `Cancel(string key)` | active scene group token 및 global token 취소 |
+| `Cancel(string key, Scene/GameObject/Component)` | 지정 scene의 group token 및 global token 취소 |
+| `Cancel(int tokenID)` | 모든 scene container와 global token에서 ID 검색 후 취소 |
+| `Cancel(CancellationTokenData tokenData)` | token data에 저장된 owner scene 기준으로 취소 |
+| `IsCancelled(CancellationTokenData tokenData)` | token cancellation state 확인 |
+| `GetCancellationTokenOnDisableAndDestroy()` | owner disable/destroy 시 취소되는 object token 발행 |
+| `UniTaskBehaviour<T>.CreateToken()` | cached trigger를 통해 object token 발행 |
+| `UniTaskTokenObject.GetTokenData(...)` | asset key 기반 global/group token 조회 |
+
+## Package Layout
+
+```text
+Runtime/
+  AsyncDisableAndDestroyTrigger.cs
+  UniTaskBehaviour.cs
+  UniTaskTokenObject.cs
+  UnitaskTokenContainer.cs
+  UniTaskExtention.asmdef
+
+Editor/
+  UniTaskTokenObjectEditor.cs
+  UniTaskExtention.Editor.asmdef
+
+Tests/
+  Runtime/
+  UniTaskExtention.Test.asmdef
+```
