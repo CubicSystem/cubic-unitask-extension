@@ -1,10 +1,12 @@
 {
-    "name": "UniTaskExtention",
-    "rootNamespace": "CubicEngine.UnitaskExtension",
+    "name": "UniTaskExtension.Editor",
+    "rootNamespace": "CubicEngine.UnitaskExtension.Editor",
     "references": [
-        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+        "GUID:f4cd26956fc403c448d8d506635f88f3"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

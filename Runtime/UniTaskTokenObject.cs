@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 namespace CubicEngine.UnitaskExtension
 {
-[CreateAssetMenu(fileName = "NewUnitaskTokenData", menuName = "Utility/UnitaskExtention/TokenObject")]
+[CreateAssetMenu(fileName = "NewUnitaskTokenData", menuName = "Utility/UnitaskExtension/TokenObject")]
 public partial class UniTaskTokenObject : ScriptableObject
 {
     [SerializeField] private bool isGlobalToken = false;

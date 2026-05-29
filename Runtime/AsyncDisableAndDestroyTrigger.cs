@@ -6,7 +6,7 @@ namespace CubicEngine.UnitaskExtension
 {
     /**
      * @author  hns17@naver.com
-     * @brief   Monobehaviour에서 사용할 CancellationTokenSource 관리를 위한 Extention Method
+     * @brief   Monobehaviour에서 사용할 CancellationTokenSource 관리를 위한 Extension Method
      *          OnDisable 및 OnDestroy가 호출되면 Cancel 처리되는 토큰을 리턴한다.
      */
     public static class UnityCancellationTask

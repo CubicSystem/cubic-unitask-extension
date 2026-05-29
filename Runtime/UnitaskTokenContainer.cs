@@ -359,6 +359,15 @@ public static class UniTaskTokenContainer
         handler.Dispose();
         return true;
     }
+
+    public static void ClearGlobalTokens()
+    {
+        var tokenHandlers = new List<CancellationTokenHandler>(globalTokens.Values);
+        globalTokens.Clear();
+        foreach(var tokenHandler in tokenHandlers) {
+            tokenHandler.Dispose();
+        }
+    }
     
     //Create TokenSource and return CancellationTokenData
     public static CancellationTokenData GetGlobalToken(string globalKey)
