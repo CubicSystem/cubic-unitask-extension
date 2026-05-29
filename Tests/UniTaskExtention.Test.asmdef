@@ -1,0 +1,17 @@
+{
+    "name": "UniTaskExtention.Test",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f4cd26956fc403c448d8d506635f88f3",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
