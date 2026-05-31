@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
 
-namespace CubicEngine.UnitaskExtension.Tests
+namespace CubicEngine.UnitaskExtension.Samples
 {
 public class TestTokenContainer : MonoBehaviour
 {

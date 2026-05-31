@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 using static CubicEngine.UnitaskExtension.UniTaskTokenContainer;
 
-namespace CubicEngine.UnitaskExtension.Tests
+namespace CubicEngine.UnitaskExtension.Samples
 {
 public class TestMonoTask : UniTaskBehaviour<TestMonoTask>
 {

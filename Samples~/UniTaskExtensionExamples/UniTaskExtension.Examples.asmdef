@@ -1,6 +1,6 @@
 {
-    "name": "UniTaskExtension.Test",
-    "rootNamespace": "CubicEngine.UnitaskExtension.Tests",
+    "name": "UniTaskExtension.Examples",
+    "rootNamespace": "CubicEngine.UnitaskExtension.Samples",
     "references": [
         "GUID:f4cd26956fc403c448d8d506635f88f3",
         "GUID:f51ebe6a0ceec4240a699833d6309b23"

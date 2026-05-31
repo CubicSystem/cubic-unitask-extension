@@ -4,6 +4,13 @@
   "displayName": "Cubic UniTask Extension",
   "description": "UniTask extension package for CancellationToken management.",
   "unity": "2019.1",
+  "samples": [
+    {
+      "displayName": "UniTask Extension Examples",
+      "description": "Example scenes and behaviours that demonstrate token cancellation with UniTask.",
+      "path": "Samples~/UniTaskExtensionExamples"
+    }
+  ],
   "author": {
     "name": "cubicsystem",
     "email": "withcubic@naver.com"

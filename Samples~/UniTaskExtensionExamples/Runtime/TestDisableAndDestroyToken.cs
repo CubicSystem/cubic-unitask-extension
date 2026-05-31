@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CubicEngine.UnitaskExtension.Tests
+namespace CubicEngine.UnitaskExtension.Samples
 {
 public class TestDisableAndDestroyToken : MonoBehaviour
 {
